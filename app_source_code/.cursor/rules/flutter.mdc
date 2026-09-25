@@ -1,0 +1,14 @@
+---
+description: Stock Advisory Flutter Mobile Architecture and Rules
+globs: lib/**/*.dart, test/**/*.dart
+---
+
+# Cursor Rules for Stock Advisory Flutter App
+
+- **Architecture:** Clean Architecture (`core/`, `models/`, `features/`).
+- **State:** Riverpod (`flutter_riverpod`).
+- **Local DB:** SQLite (`sqflite`) for offline-first watchlist & notes.
+- **Precision:** Monospace numbers for all P/E, ROCE, and balance sheet figures.
+- **Currency:** INR (₹ in Crore) via `intl` `en_IN`.
+- **Precedence:** Fundamental Concerns → Insufficient Evidence → Watch & Wait → Worth Researching.
+- **Reference:** See `AGENTS.md` and `../mockup_by_agy/mobile/DEVELOPER_GUIDE.md`.
