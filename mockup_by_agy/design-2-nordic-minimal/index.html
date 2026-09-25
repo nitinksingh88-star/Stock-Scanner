@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Advisory — Nordic Minimalist SaaS</title>
+  <link rel="stylesheet" href="../shared/shared-styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="nordic-body">
+
+  <!-- Simulation Control Toolbar -->
+  <div class="sim-header-bar">
+    <div class="container-nordic flex-between">
+      <div class="flex-center gap-3">
+        <span class="sim-tag">⚡ System State Simulator:</span>
+        <select id="stateSelect" class="nordic-select-sm" onchange="window.switchNordicState(this.value)">
+          <option value="normal">Normal (Live Assessment Active)</option>
+          <option value="no-data">State 1: No Data Yet (Setup)</option>
+          <option value="refreshing">State 2: Refresh Running</option>
+          <option value="token-rejected">State 3: Token Rejected (Expired)</option>
+          <option value="partial-failure">State 4: Partial Provider Failure</option>
+          <option value="research-expired">State 5: Research Expired (>30d)</option>
+          <option value="no-opportunities">State 6: No Qualifying Opportunities</option>
+        </select>
+      </div>
+      <div class="text-xs text-slate-400">Design 2: Nordic Minimalist Workspace</div>
+    </div>
+  </div>
+
+  <!-- Primary Top Navbar -->
+  <header class="nordic-header">
+    <div class="container-nordic flex-between">
+      <!-- App Identity -->
+      <div class="flex-center gap-3">
+        <div class="brand-glyph">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">Stock Advisory <span class="badge-nordic-micro">MVP v0.3</span></div>
+          <div class="brand-sub">Fundamental Research &bull; Indian Equities</div>
+        </div>
+      </div>
+
+      <!-- Center Nav Tabs -->
+      <nav class="nordic-nav">
+        <button class="nordic-tab active" data-screen="brief" onclick="window.navigateToScreen('brief')">
+          <span>Brief</span>
+        </button>
+        <button class="nordic-tab" data-screen="analysis" onclick="window.navigateToScreen('analysis')">
+          <span>Analysis</span>
+        </button>
+        <button class="nordic-tab" data-screen="watchlist" onclick="window.navigateToScreen('watchlist')">
+          <span>Watchlist</span>
+          <span class="nordic-counter" id="watchlistCount">2</span>
+        </button>
+        <button class="nordic-tab" data-screen="explore" onclick="window.navigateToScreen('explore')">
+          <span>Explore</span>
+        </button>
+        <button class="nordic-tab" data-screen="settings" onclick="window.navigateToScreen('settings')">
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <!-- Right System Health Status -->
+      <div class="flex-center gap-3">
+        <div class="status-pill-clean">
+          <span class="live-dot"></span>
+          <span>Upstox Live</span>
+        </div>
+        <button class="btn-nordic-outline" onclick="window.triggerRefresh()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Advisory Context Strip (APP-01) -->
+  <section class="context-bar-clean">
+    <div class="container-nordic flex-between flex-wrap gap-4">
+      <div class="flex-center gap-6">
+        <div class="ctx-cell">
+          <span class="ctx-dim">Session:</span>
+          <span class="ctx-bold" id="ctxTradingDate">24-Sep-2026 (Completed T)</span>
+        </div>
+        <div class="ctx-cell">
+          <span class="ctx-dim">Horizon:</span>
+          <span class="ctx-bold">1–3 Years</span>
+        </div>
+        <div class="ctx-cell">
+          <span class="ctx-dim">Universe:</span>
+          <span class="ctx-bold">5 of 35 companies (Phase 1)</span>
+        </div>
+        <div class="ctx-cell">
+          <span class="ctx-dim">Updated:</span>
+          <span class="ctx-bold num-tabular">25-Sep 09:30 IST</span>
+        </div>
+      </div>
+      <div class="flex-center gap-3">
+        <span class="text-xs text-slate-500 font-medium">Decline Discovery Window:</span>
+        <div class="segmented-control">
+          <button class="seg-btn active" id="btnDayWindow" onclick="window.switchDeclineWindow('day')">Daily (&le; -2%)</button>
+          <button class="seg-btn" id="btnMonthWindow" onclick="window.switchDeclineWindow('month')">1-Month (&le; -8%)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Banner Alerts for Edge States -->
+  <div class="container-nordic">
+    <div id="nordicAlertBox" class="nordic-alert" style="display: none;"></div>
+  </div>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="container-nordic content-viewport">
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: APP-01 OPPORTUNITY BRIEF         -->
+    <!-- ========================================== -->
+    <section id="screen-brief" class="nordic-screen active">
+
+      <!-- Benchmark Summary Row -->
+      <div class="nordic-grid-4 mb-6">
+        <div class="nordic-card p-4">
+          <div class="flex-between">
+            <span class="text-xs font-semibold text-slate-400">BENCHMARK</span>
+            <span class="badge-clean-neutral">Index</span>
+          </div>
+          <div class="text-lg font-bold text-slate-900 mt-1">NIFTY 50</div>
+          <div class="flex-between items-baseline mt-2">
+            <span class="text-2xl font-bold font-mono text-rose-600" id="bmNifty"> -1.35%</span>
+            <span class="text-xs text-slate-400">25,120.40</span>
+          </div>
+        </div>
+
+        <div class="nordic-card p-4">
+          <div class="flex-between">
+            <span class="text-xs font-semibold text-slate-400">SECTOR BASKET</span>
+            <span class="badge-clean-amber">Proxy Basket</span>
+          </div>
+          <div class="text-lg font-bold text-slate-900 mt-1">Nifty IT Proxy</div>
+          <div class="flex-between items-baseline mt-2">
+            <span class="text-2xl font-bold font-mono text-rose-600" id="bmIt"> -2.40%</span>
+            <span class="text-xs text-slate-400">5 liquid stocks</span>
+          </div>
+        </div>
+
+        <div class="nordic-card p-4">
+          <div class="flex-between">
+            <span class="text-xs font-semibold text-slate-400">SECTOR BENCHMARK</span>
+            <span class="badge-clean-neutral">Official</span>
+          </div>
+          <div class="text-lg font-bold text-slate-900 mt-1">Nifty FMCG</div>
+          <div class="flex-between items-baseline mt-2">
+            <span class="text-2xl font-bold font-mono text-rose-600" id="bmFmcg"> -1.10%</span>
+            <span class="text-xs text-slate-400">58,920.00</span>
+          </div>
+        </div>
+
+        <div class="nordic-card p-4">
+          <div class="flex-between">
+            <span class="text-xs font-semibold text-slate-400">SECTOR BENCHMARK</span>
+            <span class="badge-clean-neutral">Official</span>
+          </div>
+          <div class="text-lg font-bold text-slate-900 mt-1">Nifty Healthcare</div>
+          <div class="flex-between items-baseline mt-2">
+            <span class="text-2xl font-bold font-mono text-rose-600" id="bmPharma"> -0.75%</span>
+            <span class="text-xs text-slate-400">21,340.50</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Worth Researching Candidates -->
+      <div class="section-title-clean">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Worth Researching Candidates</h2>
+          <p class="text-sm text-slate-500">Companies crossing the decline trigger that passed all quality rules and trade below sector valuation.</p>
+        </div>
+        <div class="counter-badge" id="worthCountBadge">2 Qualified</div>
+      </div>
+
+      <div class="cards-stack" id="worthContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Watch and Wait Queue -->
+      <div class="section-title-clean mt-10">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Watch and Wait</h2>
+          <p class="text-sm text-slate-500">Quality fundamentals intact, but valuation parity, caution flags, or pending review require monitoring.</p>
+        </div>
+        <div class="counter-badge badge-amber" id="watchCountBadge">1 Candidate</div>
+      </div>
+
+      <div class="cards-stack" id="watchContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Exclusion Notice -->
+      <div class="exclusion-banner-clean mt-8">
+        <div class="flex-center gap-3">
+          <span class="icon-info">ℹ</span>
+          <div class="text-sm text-slate-600">
+            <strong>Universe Exclusions:</strong> 1 company failed valuation (Asian Paints P/E 46.5x vs 41.2x), and 1 company disqualified due to unverified corporate action (Titan 1:1 bonus distortion).
+          </div>
+        </div>
+        <button class="btn-clean-text" onclick="window.navigateToScreen('explore')">Inspect Excluded in Explore &rarr;</button>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: APP-02 COMPANY ANALYSIS          -->
+    <!-- ========================================== -->
+    <section id="screen-analysis" class="nordic-screen">
+      
+      <!-- Company Switcher Pills -->
+      <div class="company-tabs-pills" id="companyTabs">
+        <!-- Dynamic tabs -->
+      </div>
+
+      <div id="companyDeepContainer" class="mt-6">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: APP-03 WATCHLIST & NOTES         -->
+    <!-- ========================================== -->
+    <section id="screen-watchlist" class="nordic-screen">
+      <div class="nordic-card p-6">
+        <div class="flex-between border-b pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Watchlist &amp; Personal Research Notes</h2>
+            <p class="text-sm text-slate-500">Persisted locally in SQLite. Notes and checkpoints survive market data refreshes.</p>
+          </div>
+          <span class="badge-clean-green">● Local Persistence Active</span>
+        </div>
+
+        <div id="watchlistStack" class="cards-stack mt-6">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 4: APP-04 EXPLORE & COMPARE         -->
+    <!-- ========================================== -->
+    <section id="screen-explore" class="nordic-screen">
+      <div class="nordic-card p-6">
+        <div class="flex-between border-b pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Universe Screener &amp; Multi-Company Comparison</h2>
+            <p class="text-sm text-slate-500">Search covered companies, filter across metrics, and compare up to 3 side-by-side.</p>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-row-nordic mt-4">
+          <input type="text" id="nordicSearch" placeholder="Search ticker or name..." class="nordic-input" oninput="window.filterNordicScreener()">
+          <select id="nordicSector" class="nordic-select" onchange="window.filterNordicScreener()">
+            <option value="all">All Sectors</option>
+            <option value="it">Information Technology</option>
+            <option value="fmcg">FMCG &amp; Paints</option>
+            <option value="pharma">Pharmaceuticals</option>
+            <option value="consumer_discretionary">Consumer Discretionary</option>
+          </select>
+          <select id="nordicConclusion" class="nordic-select" onchange="window.filterNordicScreener()">
+            <option value="all">All Conclusions</option>
+            <option value="Worth researching">Worth researching</option>
+            <option value="Watch and wait">Watch and wait</option>
+            <option value="Fundamental concerns">Fundamental concerns</option>
+            <option value="Insufficient evidence">Insufficient evidence</option>
+          </select>
+          <select id="nordicSort" class="nordic-select" onchange="window.filterNordicScreener()">
+            <option value="day">Sort: Daily Decline</option>
+            <option value="month">Sort: 1-Month Decline</option>
+            <option value="pe">Sort: P/E Ratio</option>
+            <option value="roce">Sort: ROCE</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container-nordic mt-4">
+          <table class="nordic-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Sector</th>
+                <th class="text-right">Price (₹)</th>
+                <th class="text-right">Day %</th>
+                <th class="text-right">Month %</th>
+                <th class="text-right">P/E</th>
+                <th class="text-right">ROCE</th>
+                <th class="text-right">D/E</th>
+                <th>Conclusion</th>
+                <th class="text-center">Compare</th>
+              </tr>
+            </thead>
+            <tbody id="nordicTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Comparison Matrix -->
+        <div class="mt-10 border-t pt-6">
+          <div class="flex-between">
+            <h3 class="text-lg font-bold text-slate-900">Side-by-Side Comparison Matrix</h3>
+            <button class="btn-clean-text text-sm" onclick="window.clearNordicComparison()">Clear Comparison</button>
+          </div>
+
+          <div id="crossSectorBanner" class="nordic-alert alert-amber mt-3" style="display: none;">
+            ⚠️ <strong>Cross-Sector Comparison Flag:</strong> Comparing companies across different industry classifications. Capital structures and P/E valuations cannot be equated directly.
+          </div>
+
+          <div id="nordicCompMatrix" class="mt-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: APP-05 RESEARCH NOTES & SETTINGS -->
+    <!-- ========================================== -->
+    <section id="screen-settings" class="nordic-screen">
+      <div class="nordic-grid-2">
+        
+        <!-- Left: Sector Notes -->
+        <div class="nordic-card p-6">
+          <h3 class="text-lg font-bold text-slate-900 mb-1">Sector Research Notes</h3>
+          <p class="text-xs text-slate-500 mb-4">Source-backed qualitative intelligence. Pressure classification is independent of severity.</p>
+          <div id="nordicSectorNotes" class="space-y-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Right: Governance & Token Status -->
+        <div class="nordic-card p-6">
+          <div class="flex-between mb-4">
+            <h3 class="text-lg font-bold text-slate-900">Screening Thresholds</h3>
+            <span class="badge-clean-neutral" id="nordicRuleVer">v1.2</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex-between text-sm">
+              <span class="text-slate-600 font-medium">ROCE Minimum Threshold</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="nordicRoce" value="15.0" class="nordic-input-sm"> <span class="text-xs text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="flex-between text-sm">
+              <span class="text-slate-600 font-medium">Total Debt / Equity Maximum</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="nordicDe" value="1.00" class="nordic-input-sm"> <span class="text-xs text-slate-400">x</span>
+              </div>
+            </div>
+            <div class="flex-between text-sm">
+              <span class="text-slate-600 font-medium">Daily Decline Trigger</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="nordicDay" value="-2.0" class="nordic-input-sm"> <span class="text-xs text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="flex-between text-sm">
+              <span class="text-slate-600 font-medium">1-Month Decline Trigger</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="nordicMonth" value="-8.0" class="nordic-input-sm"> <span class="text-xs text-slate-400">%</span>
+              </div>
+            </div>
+            <button class="btn-nordic-primary w-full mt-4" onclick="window.saveNordicRules()">Save &amp; Recalculate Assessment (v1.3)</button>
+          </div>
+
+          <hr class="my-6 border-slate-100">
+
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Upstox Analytics Provider Diagnostics</h3>
+          <div class="space-y-2 text-xs text-slate-600">
+            <div class="flex-between py-1 border-b border-slate-100">
+              <span>Token Validity:</span>
+              <strong class="text-emerald-600">Active (Expires 14-Aug-2027)</strong>
+            </div>
+            <div class="flex-between py-1 border-b border-slate-100">
+              <span>Daily Request Budget:</span>
+              <strong class="font-mono">4,850 / 5,000 reqs</strong>
+            </div>
+            <div class="flex-between py-1 border-b border-slate-100">
+              <span>Loopback Local Latency:</span>
+              <strong class="font-mono">142 ms</strong>
+            </div>
+            <div class="flex-between py-1">
+              <span>Stored Snapshot Version:</span>
+              <strong class="font-mono">SNP-20260924-001</strong>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Slide-over Evidence Drawer -->
+  <div class="nordic-slideover-backdrop" id="nordicDrawerBackdrop" onclick="window.closeNordicDrawer(event)">
+    <div class="nordic-drawer" onclick="event.stopPropagation()">
+      <div class="drawer-header-nordic">
+        <div>
+          <span class="text-xs font-bold text-indigo-600 tracking-wider">EVIDENCE DOSSIER</span>
+          <h3 class="text-lg font-bold text-slate-900" id="nordicDrawerTitle">Rule &amp; Formula Trace</h3>
+        </div>
+        <button class="btn-close-clean" onclick="window.closeNordicDrawer()">&times;</button>
+      </div>
+      <div class="drawer-body-nordic" id="nordicDrawerBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-hub" id="nordicToastHub"></div>
+
+  <!-- Scripts -->
+  <script src="../shared/mock-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

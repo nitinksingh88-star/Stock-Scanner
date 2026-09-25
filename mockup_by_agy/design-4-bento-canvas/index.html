@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Advisory — Bento Analytical Canvas</title>
+  <link rel="stylesheet" href="../shared/shared-styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bento-body">
+
+  <!-- State Simulator Strip -->
+  <div class="bento-sim-strip">
+    <div class="container-bento flex-between">
+      <div class="flex-center gap-3">
+        <span class="text-xs font-bold text-violet-400">⚡ BENTO SIMULATOR:</span>
+        <select id="stateSelect" class="bento-select-sm" onchange="window.switchBentoState(this.value)">
+          <option value="normal">Normal Assessment (Active Snapshot)</option>
+          <option value="no-data">State 1: No Data Yet (Initial Setup)</option>
+          <option value="refreshing">State 2: Refresh Running</option>
+          <option value="token-rejected">State 3: Token Auth Failure (401)</option>
+          <option value="partial-failure">State 4: Partial Provider Failure (80%)</option>
+          <option value="research-expired">State 5: Research Note Expired (&gt;30d)</option>
+          <option value="no-opportunities">State 6: Zero Qualifying Opportunities</option>
+        </select>
+      </div>
+      <div class="text-xs text-zinc-400">Design 4: Bento Modular Analytical Canvas</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bento-header">
+    <div class="container-bento flex-between">
+      <div class="flex-center gap-3">
+        <div class="bento-avatar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-zinc-900 leading-tight">Stock Advisory Canvas</h1>
+          <div class="text-xs text-zinc-500">Bento Intelligence System &bull; Indian Equities</div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav class="bento-nav">
+        <button class="bento-tab active" data-screen="brief" onclick="window.navigateToScreen('brief')">Opportunity Brief</button>
+        <button class="bento-tab" data-screen="analysis" onclick="window.navigateToScreen('analysis')">Dossier Analysis</button>
+        <button class="bento-tab" data-screen="watchlist" onclick="window.navigateToScreen('watchlist')">Watchlist (<span id="bentoWatchCount">2</span>)</button>
+        <button class="bento-tab" data-screen="explore" onclick="window.navigateToScreen('explore')">Explore &amp; Matrix</button>
+        <button class="bento-tab" data-screen="settings" onclick="window.navigateToScreen('settings')">Notes &amp; Rules</button>
+      </nav>
+
+      <div class="flex-center gap-3">
+        <button class="bento-btn-refresh" onclick="window.triggerBentoRefresh()">↻ Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Bento Context Header Bar -->
+  <section class="bento-meta-bar">
+    <div class="container-bento flex-between flex-wrap gap-4">
+      <div class="flex-center gap-6 text-xs text-zinc-600">
+        <div><span class="text-zinc-400">Trading Session:</span> <strong class="text-zinc-900" id="bentoDate">24-Sep-2026 (Completed T)</strong></div>
+        <div><span class="text-zinc-400">Horizon:</span> <strong class="text-zinc-900">1–3 Years</strong></div>
+        <div><span class="text-zinc-400">Covered:</span> <strong class="text-zinc-900">5 of 35 stocks (Phase 1)</strong></div>
+        <div><span class="text-zinc-400">Provider:</span> <strong class="text-emerald-700">● Upstox Live</strong></div>
+      </div>
+
+      <div class="flex-center gap-2">
+        <span class="text-xs text-zinc-500 font-semibold">Decline Window:</span>
+        <div class="bento-toggle-group">
+          <button class="bt-btn active" id="btnBentoDay" onclick="window.switchDeclineWindow('day')">Daily (&le; -2%)</button>
+          <button class="bt-btn" id="btnBentoMonth" onclick="window.switchDeclineWindow('month')">1-Month (&le; -8%)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Banner Alerts for Edge States -->
+  <div class="container-bento">
+    <div id="bentoAlertBox" class="bento-alert" style="display: none;"></div>
+  </div>
+
+  <!-- MAIN BENTO VIEWPORT -->
+  <main class="container-bento bento-viewport">
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: APP-01 OPPORTUNITY BRIEF         -->
+    <!-- ========================================== -->
+    <section id="screen-brief" class="bento-screen active">
+
+      <!-- Bento Tile 1: Macro & Sector Decline Dashboard -->
+      <div class="bento-tile mb-6">
+        <div class="flex-between border-b border-zinc-100 pb-3 mb-4">
+          <div>
+            <span class="bento-tag">MODULE_01 // MACRO STRESS DISCOVERY</span>
+            <h2 class="text-lg font-bold text-zinc-900 mt-1">Market &amp; Sector Benchmark Stress</h2>
+          </div>
+          <span class="text-xs text-zinc-400 font-medium">Trigger active on completed sessions</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bento-subcard">
+            <span class="text-xs text-zinc-400 font-semibold">BROAD MARKET</span>
+            <div class="text-base font-bold text-zinc-900 mt-1">NIFTY 50</div>
+            <div class="text-2xl font-bold font-mono text-rose-600 mt-2" id="bmNifty">-1.35%</div>
+            <div class="text-xs text-zinc-400 mt-1">Close: 25,120.40</div>
+          </div>
+
+          <div class="bento-subcard">
+            <span class="text-xs text-zinc-400 font-semibold">SECTOR PROXY</span>
+            <div class="text-base font-bold text-zinc-900 mt-1">Nifty IT Proxy <span class="bento-badge-amber">Proxy (5)</span></div>
+            <div class="text-2xl font-bold font-mono text-rose-600 mt-2" id="bmIt">-2.40%</div>
+            <div class="text-xs text-zinc-400 mt-1">Equal-weight proxy basket</div>
+          </div>
+
+          <div class="bento-subcard">
+            <span class="text-xs text-zinc-400 font-semibold">SECTOR BENCHMARK</span>
+            <div class="text-base font-bold text-zinc-900 mt-1">Nifty FMCG</div>
+            <div class="text-2xl font-bold font-mono text-rose-600 mt-2" id="bmFmcg">-1.10%</div>
+            <div class="text-xs text-zinc-400 mt-1">Official Sector Index</div>
+          </div>
+
+          <div class="bento-subcard">
+            <span class="text-xs text-zinc-400 font-semibold">SECTOR BENCHMARK</span>
+            <div class="text-base font-bold text-zinc-900 mt-1">Nifty Healthcare</div>
+            <div class="text-2xl font-bold font-mono text-rose-600 mt-2" id="bmPharma">-0.75%</div>
+            <div class="text-xs text-zinc-400 mt-1">Official Sector Index</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Tile 2: Primary Candidates (Worth Researching) -->
+      <div class="bento-tile mb-6">
+        <div class="flex-between border-b border-zinc-100 pb-3 mb-4">
+          <div>
+            <span class="bento-tag text-emerald-700">MODULE_02 // WORTH RESEARCHING</span>
+            <h2 class="text-lg font-bold text-zinc-900 mt-1">Deserving Attention (Qualified Opportunities)</h2>
+          </div>
+          <span class="bento-chip-green" id="bentoWorthCount">2 Candidates Qualified</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="bentoWorthList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Bento Tile 3: Watch and Wait Queue -->
+      <div class="bento-tile mb-6">
+        <div class="flex-between border-b border-zinc-100 pb-3 mb-4">
+          <div>
+            <span class="bento-tag text-amber-700">MODULE_03 // MONITORING QUEUE</span>
+            <h2 class="text-lg font-bold text-zinc-900 mt-1">Watch and Wait (Uncertainty or Parity)</h2>
+          </div>
+          <span class="bento-chip-amber" id="bentoWatchCountBadge">1 Candidate Monitoring</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="bentoWatchList">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Bento Tile 4: Exclusions Audit -->
+      <div class="bento-subcard p-4 border border-dashed border-zinc-300 flex-between flex-wrap gap-4">
+        <div class="text-xs text-zinc-600">
+          <strong>Universe Exclusions Audit:</strong> 1 failed valuation (Asian Paints P/E 46.5x vs 41.2x), and 1 disqualified for unverified corporate action (Titan 1:1 bonus issue).
+        </div>
+        <button class="bento-btn-sm" onclick="window.navigateToScreen('explore')">Inspect Excluded in Explore &rarr;</button>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: APP-02 COMPANY ANALYSIS          -->
+    <!-- ========================================== -->
+    <section id="screen-analysis" class="bento-screen">
+      
+      <!-- Company Selector Bar -->
+      <div class="bento-pills-bar" id="bentoCompanyPills">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div id="bentoDeepViewContainer" class="mt-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: APP-03 WATCHLIST & NOTES         -->
+    <!-- ========================================== -->
+    <section id="screen-watchlist" class="bento-screen">
+      <div class="bento-tile">
+        <div class="flex-between border-b border-zinc-100 pb-3 mb-4">
+          <div>
+            <span class="bento-tag">MODULE_PERSISTENCE // SQLITE</span>
+            <h2 class="text-lg font-bold text-zinc-900 mt-1">Watchlist &amp; Personal Theses</h2>
+          </div>
+          <span class="bento-chip-green">Persisted Locally</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="bentoWatchlistContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 4: APP-04 EXPLORE & COMPARE         -->
+    <!-- ========================================== -->
+    <section id="screen-explore" class="bento-screen">
+      <div class="bento-tile">
+        <div class="flex-between border-b border-zinc-100 pb-3 mb-4">
+          <div>
+            <span class="bento-tag">MODULE_SCREENER // EXPLORE</span>
+            <h2 class="text-lg font-bold text-zinc-900 mt-1">Universe Screener &amp; Multi-Stock Matrix</h2>
+          </div>
+          <span class="text-xs text-zinc-400">Unavailable values sort last</span>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="flex gap-3 flex-wrap mb-4">
+          <input type="text" id="bentoSearch" placeholder="Search ticker or name..." class="bento-input" oninput="window.filterBentoScreener()">
+          <select id="bentoSector" class="bento-select" onchange="window.filterBentoScreener()">
+            <option value="all">All Sectors</option>
+            <option value="it">Information Technology</option>
+            <option value="fmcg">FMCG &amp; Paints</option>
+            <option value="pharma">Pharmaceuticals</option>
+          </select>
+          <select id="bentoConclusion" class="bento-select" onchange="window.filterBentoScreener()">
+            <option value="all">All Conclusions</option>
+            <option value="Worth researching">Worth researching</option>
+            <option value="Watch and wait">Watch and wait</option>
+            <option value="Fundamental concerns">Fundamental concerns</option>
+            <option value="Insufficient evidence">Insufficient evidence</option>
+          </select>
+        </div>
+
+        <!-- Screener Table -->
+        <div class="overflow-x-auto">
+          <table class="bento-table">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Sector</th>
+                <th class="text-right">Price (₹)</th>
+                <th class="text-right">Day %</th>
+                <th class="text-right">Month %</th>
+                <th class="text-right">P/E</th>
+                <th class="text-right">ROCE</th>
+                <th class="text-right">D/E</th>
+                <th>Verdict</th>
+                <th class="text-center">CMP</th>
+              </tr>
+            </thead>
+            <tbody id="bentoTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3-Way Comparison Matrix -->
+        <div class="mt-8 border-t border-zinc-200 pt-4">
+          <div class="flex-between">
+            <h3 class="text-base font-bold text-zinc-900">3-Company Comparison Matrix</h3>
+            <button class="bento-btn-sm" onclick="window.clearBentoComparison()">Clear Selection</button>
+          </div>
+
+          <div id="bentoCrossBanner" class="bento-alert alert-amber mt-3" style="display: none;">
+            ⚠️ Cross-Sector Comparison Notice: Multiple sectors active in comparison. Multiple valuations are influenced by distinct sector operating dynamics.
+          </div>
+
+          <div id="bentoMatrixContainer" class="mt-3">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: APP-05 RESEARCH NOTES & SETTINGS -->
+    <!-- ========================================== -->
+    <section id="screen-settings" class="bento-screen">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Sector Notes -->
+        <div class="bento-tile">
+          <span class="bento-tag">QUALITATIVE NOTES</span>
+          <h3 class="text-base font-bold text-zinc-900 mt-1 mb-4">Sourced Sector Notes</h3>
+          <div id="bentoSectorNotesList" class="space-y-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Rules & Provider Diagnostics -->
+        <div class="bento-tile">
+          <div class="flex-between mb-4">
+            <div>
+              <span class="bento-tag">SYSTEM RULES</span>
+              <h3 class="text-base font-bold text-zinc-900 mt-1">Screening Thresholds</h3>
+            </div>
+            <span class="bento-chip-neutral" id="bentoRuleVer">v1.2</span>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div class="flex-between">
+              <span class="font-medium text-zinc-700">ROCE Minimum Threshold</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="bRoce" value="15.0" class="bento-input-sm"> <span>%</span>
+              </div>
+            </div>
+            <div class="flex-between">
+              <span class="font-medium text-zinc-700">Debt / Equity Maximum</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="bDe" value="1.00" class="bento-input-sm"> <span>x</span>
+              </div>
+            </div>
+            <div class="flex-between">
+              <span class="font-medium text-zinc-700">Daily Decline Trigger</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="bDay" value="-2.0" class="bento-input-sm"> <span>%</span>
+              </div>
+            </div>
+            <div class="flex-between">
+              <span class="font-medium text-zinc-700">1-Month Decline Trigger</span>
+              <div class="flex-center gap-1">
+                <input type="number" id="bMonth" value="-8.0" class="bento-input-sm"> <span>%</span>
+              </div>
+            </div>
+            <button class="bento-btn-primary w-full mt-4" onclick="window.saveBentoRules()">Save &amp; Recalculate (v1.3)</button>
+          </div>
+
+          <hr class="border-zinc-200 my-6">
+
+          <span class="bento-tag">PROVIDER HEALTH</span>
+          <h3 class="text-sm font-bold text-zinc-900 mt-1 mb-2">Upstox Analytics Diagnostics</h3>
+          <div class="text-xs space-y-1 text-zinc-600">
+            <div>Token: <strong class="text-emerald-700">Active (Valid through 14-Aug-2027)</strong></div>
+            <div>Daily Quota: <strong class="font-mono">4,850 of 5,000 requests</strong></div>
+            <div>Latency: <strong class="font-mono">142 ms</strong></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bento Modal for Evidence -->
+  <div class="overlay-backdrop" id="bentoModalBackdrop" onclick="window.closeBentoModal(event)">
+    <div class="bento-modal" onclick="event.stopPropagation()">
+      <div class="flex-between border-b border-zinc-100 pb-3">
+        <h3 class="text-base font-bold text-zinc-900" id="bentoModalTitle">Evidence Record</h3>
+        <button class="bento-close-btn" onclick="window.closeBentoModal()">&times;</button>
+      </div>
+      <div class="mt-4 text-xs" id="bentoModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <div class="bento-toasts" id="bentoToasts"></div>
+
+  <!-- Scripts -->
+  <script src="../shared/mock-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

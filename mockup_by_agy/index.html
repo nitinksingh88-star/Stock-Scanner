@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Advisory — Interactive Mockup Showcase (by AGY)</title>
+  <link rel="stylesheet" href="shared/shared-styles.css">
+  <style>
+    :root {
+      --hub-bg: #090D16;
+      --hub-panel: #111827;
+      --hub-border: #1F2937;
+      --hub-text: #F3F4F6;
+      --hub-muted: #9CA3AF;
+      --hub-accent: #3B82F6;
+      --hub-emerald: #10B981;
+    }
+    body {
+      background-color: var(--hub-bg);
+      color: var(--hub-text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Showcase Top Bar */
+    .hub-header {
+      background-color: var(--hub-panel);
+      border-bottom: 1px solid var(--hub-border);
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      z-index: 50;
+    }
+    .hub-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .hub-badge {
+      background-color: #1E3A8A;
+      color: #93C5FD;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+    .hub-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    /* Design Selector Pills */
+    .design-switcher-group {
+      display: flex;
+      background-color: #030712;
+      border: 1px solid var(--hub-border);
+      padding: 0.2rem;
+      border-radius: 8px;
+      gap: 0.2rem;
+    }
+    .design-tab-btn {
+      background: none;
+      border: none;
+      color: var(--hub-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .design-tab-btn:hover {
+      color: #FFFFFF;
+    }
+    .design-tab-btn.active {
+      background-color: #2563EB;
+      color: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .btn-num {
+      background-color: rgba(255, 255, 255, 0.2);
+      font-size: 0.65rem;
+      padding: 0.05rem 0.3rem;
+      border-radius: 9999px;
+    }
+
+    /* Viewport Resizer */
+    .viewport-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background-color: #030712;
+      border: 1px solid var(--hub-border);
+      padding: 0.2rem;
+      border-radius: 6px;
+    }
+    .vp-btn {
+      background: none;
+      border: none;
+      color: var(--hub-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.55rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .vp-btn:hover { color: #FFF; }
+    .vp-btn.active {
+      background-color: #374151;
+      color: #FFF;
+    }
+
+    .open-standalone-btn {
+      background-color: #1F2937;
+      color: #E5E7EB;
+      border: 1px solid #374151;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .open-standalone-btn:hover {
+      background-color: #374151;
+      color: #FFF;
+    }
+
+    /* Info Bar under Header */
+    .hub-info-strip {
+      background-color: #0B0F19;
+      border-bottom: 1px solid var(--hub-border);
+      padding: 0.45rem 1.25rem;
+      font-size: 0.78rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .design-desc {
+      color: #9CA3AF;
+    }
+    .design-desc strong {
+      color: #60A5FA;
+    }
+    .design-specs-pills {
+      display: flex;
+      gap: 0.75rem;
+      color: #D1D5DB;
+    }
+
+    /* Iframe Shell Area */
+    .iframe-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #030712;
+      overflow: hidden;
+      padding: 0;
+      transition: all 0.2s ease;
+    }
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background-color: #FFFFFF;
+      transition: width 0.25s ease, height 0.25s ease, box-shadow 0.25s ease;
+    }
+    .preview-frame.framed {
+      height: calc(100% - 2rem);
+      border: 1px solid #374151;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Master Hub Header -->
+  <header class="hub-header">
+    <div class="hub-brand">
+      <span class="hub-badge">MOCKUP SUITE</span>
+      <span class="hub-title">Stock Advisory Designs</span>
+    </div>
+
+    <!-- 4 Clean Designs Switcher -->
+    <div class="design-switcher-group">
+      <button class="design-tab-btn active" onclick="switchDesign('design-1-swiss-editorial', this)">
+        <span class="btn-num">1</span> Swiss Editorial
+      </button>
+      <button class="design-tab-btn" onclick="switchDesign('design-2-nordic-minimal', this)">
+        <span class="btn-num">2</span> Nordic Minimal SaaS
+      </button>
+      <button class="design-tab-btn" onclick="switchDesign('design-3-dark-institutional', this)">
+        <span class="btn-num">3</span> Dark Institutional Pro
+      </button>
+      <button class="design-tab-btn" onclick="switchDesign('design-4-bento-canvas', this)">
+        <span class="btn-num">4</span> Bento Analytical Canvas
+      </button>
+    </div>
+
+    <!-- Responsive Width Switcher -->
+    <div class="viewport-controls">
+      <button class="vp-btn active" onclick="setViewport('100%', this)">Desktop (Full)</button>
+      <button class="vp-btn" onclick="setViewport('1280px', this)">Laptop (1280px)</button>
+      <button class="vp-btn" onclick="setViewport('820px', this)">Tablet (820px)</button>
+      <button class="vp-btn" onclick="setViewport('390px', this)">Mobile (390px)</button>
+    </div>
+
+    <!-- Mobile App Suite Link -->
+    <a href="mobile/index.html" class="btn-dev-mobile" style="background-color: #059669; color: #FFF; font-size: 0.76rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; border: none; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
+      <span>📱 Mobile Native App &amp; Dev Specs</span>
+    </a>
+
+    <!-- Standalone Launch Link -->
+    <a href="design-1-swiss-editorial/index.html" target="_blank" id="standaloneLink" class="open-standalone-btn">
+      <span>Open Standalone Tab</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+    </a>
+  </header>
+
+  <!-- Info Strip with Criteria Coverage -->
+  <div class="hub-info-strip">
+    <div class="design-desc" id="designDescText">
+      <strong>Design 1: Swiss Editorial Gazette</strong> — Typography-first research journal (Newsreader / Merriweather serif, ivory canvas, paper margin notes, inline evidence drawers).
+    </div>
+    <div class="design-specs-pills">
+      <a href="mobile/index.html" style="color: #34D399; text-decoration: underline; font-weight: 600;">📱 View Mobile Native Version &amp; Dev Handoff</a>
+      <span>✓ Screens: APP-01 to APP-05</span>
+      <span>✓ States: 7 Required Handled</span>
+      <span>✓ Verified Indian Equities (IST / INR)</span>
+    </div>
+  </div>
+
+  <!-- Interactive Live Iframe -->
+  <div class="iframe-stage" id="iframeStage">
+    <iframe id="previewFrame" class="preview-frame" src="design-1-swiss-editorial/index.html"></iframe>
+  </div>
+
+  <script>
+    const designDescriptions = {
+      'design-1-swiss-editorial': '<strong>Design 1: Swiss Editorial Gazette</strong> — Typography-first research journal (Newsreader serif, warm ivory canvas, hairline dividers, pullout margin notes, inline evidence drawers).',
+      'design-2-nordic-minimal': '<strong>Design 2: Nordic Minimalist SaaS</strong> — Modern Scandinavian workspace (Slate & white, rounded-xl cards, micro-dot badges, slide-over drawer, Linear/Notion feel).',
+      'design-3-dark-institutional': '<strong>Design 3: Dark Institutional Pro Terminal</strong> — High-density financial cockpit (Obsidian canvas, monospace alignment, Bloomberg/FactSet styling, keyboard shortcuts).',
+      'design-4-bento-canvas': '<strong>Design 4: Bento Analytical Canvas</strong> — Modular card-led bento grid (Zoned quadrants for macro, quality matrix, sector headwinds, and decision checklist).'
+    };
+
+    let currentDesignPath = 'design-1-swiss-editorial';
+
+    function switchDesign(path, btnEl) {
+      currentDesignPath = path;
+      document.querySelectorAll('.design-tab-btn').forEach(btn => btn.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      const frame = document.getElementById('previewFrame');
+      frame.src = `${path}/index.html`;
+
+      document.getElementById('standaloneLink').href = `${path}/index.html`;
+      document.getElementById('designDescText').innerHTML = designDescriptions[path];
+    }
+
+    function setViewport(width, btnEl) {
+      document.querySelectorAll('.vp-btn').forEach(btn => btn.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      const frame = document.getElementById('previewFrame');
+      if (width === '100%') {
+        frame.style.width = '100%';
+        frame.classList.remove('framed');
+      } else {
+        frame.style.width = width;
+        frame.classList.add('framed');
+      }
+    }
+  </script>
+</body>
+</html>

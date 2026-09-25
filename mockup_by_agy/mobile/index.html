@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Advisory — Mobile App Mockup & Developer Reference</title>
+  <link rel="stylesheet" href="../shared/shared-styles.css">
+  <style>
+    :root {
+      --dev-bg: #0B0F19;
+      --dev-panel: #111827;
+      --dev-border: #1F2937;
+      --dev-text: #F3F4F6;
+      --dev-muted: #9CA3AF;
+      --dev-cyan: #38BDF8;
+      --dev-emerald: #10B981;
+      --dev-blue: #3B82F6;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--dev-bg);
+      color: var(--dev-text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Nav */
+    .dev-topbar {
+      background-color: var(--dev-panel);
+      border-bottom: 1px solid var(--dev-border);
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+    .dev-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .dev-tag {
+      background-color: #1E3A8A;
+      color: #93C5FD;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+    .dev-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #FFF;
+    }
+    .dev-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .btn-dev-outline {
+      background-color: #1F2937;
+      color: #E5E7EB;
+      border: 1px solid #374151;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: background 0.15s ease;
+    }
+    .btn-dev-outline:hover {
+      background-color: #374151;
+      color: #FFF;
+    }
+    .btn-dev-primary {
+      background-color: #2563EB;
+      color: #FFF;
+      border: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Main Workspace Split View */
+    .dev-workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Left: Mobile Simulator Canvas */
+    .simulator-stage {
+      flex: 1.1;
+      background-color: #030712;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 1rem;
+      overflow: auto;
+    }
+
+    .sim-device-controls {
+      position: absolute;
+      top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid #374151;
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      z-index: 30;
+    }
+    .sim-ctrl-btn {
+      background: none;
+      border: none;
+      color: #9CA3AF;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .sim-ctrl-btn.active {
+      background-color: #2563EB;
+      color: #FFF;
+    }
+
+    /* iPhone 16 Pro Realistic Device Frame */
+    .device-shell-iphone {
+      width: 393px;
+      height: 820px;
+      background-color: #000;
+      border-radius: 52px;
+      padding: 12px;
+      box-shadow: 0 0 0 4px #262626, 0 0 0 7px #171717, 0 30px 60px rgba(0, 0, 0, 0.8);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+      transform-origin: center center;
+    }
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 105px;
+      height: 28px;
+      background-color: #000;
+      border-radius: 20px;
+      z-index: 100;
+      pointer-events: none;
+    }
+    /* Home Indicator */
+    .home-indicator {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 4px;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 2px;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .device-screen-frame {
+      width: 100%;
+      height: 100%;
+      border-radius: 42px;
+      overflow: hidden;
+      background-color: #F8FAFC;
+      border: none;
+    }
+
+    /* Right: Developer Reference & Specs Panel */
+    .dev-specs-panel {
+      flex: 1;
+      background-color: var(--dev-panel);
+      border-left: 1px solid var(--dev-border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .specs-nav {
+      display: flex;
+      border-bottom: 1px solid var(--dev-border);
+      background-color: #0D131F;
+    }
+    .specs-tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--dev-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .specs-tab-btn:hover { color: #FFF; }
+    .specs-tab-btn.active {
+      color: var(--dev-cyan);
+      border-bottom-color: var(--dev-cyan);
+    }
+
+    .specs-content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      font-size: 0.84rem;
+      line-height: 1.6;
+    }
+
+    .spec-block {
+      background-color: #0B0F19;
+      border: 1px solid var(--dev-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .spec-h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #FFF;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .spec-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background-color: #1E293B;
+      color: var(--dev-cyan);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+    }
+    .spec-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      background-color: #030712;
+      color: #38BDF8;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+    }
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+      margin-top: 0.5rem;
+    }
+    .spec-table th {
+      text-align: left;
+      color: #9CA3AF;
+      border-bottom: 1px solid #374151;
+      padding: 0.4rem 0.5rem;
+    }
+    .spec-table td {
+      border-bottom: 1px solid #1F2937;
+      padding: 0.4rem 0.5rem;
+      color: #E5E7EB;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Developer Header -->
+  <header class="dev-topbar">
+    <div class="dev-logo">
+      <span class="dev-tag">MOBILE DEV SUITE</span>
+      <span class="dev-title">Stock Advisory — Mobile Native App Design &amp; Developer Handoff</span>
+    </div>
+
+    <div class="dev-actions">
+      <a href="../index.html" class="btn-dev-outline">
+        <span>← Web App Showcase</span>
+      </a>
+      <a href="app.html" target="_blank" class="btn-dev-primary">
+        <span>Open Standalone App (Phone Viewport) ↗</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Workspace Split -->
+  <div class="dev-workspace">
+
+    <!-- Left: Simulator Stage -->
+    <div class="simulator-stage">
+      <div class="sim-device-controls">
+        <span class="text-xs text-slate-400 font-bold">FRAME:</span>
+        <button class="sim-ctrl-btn active" onclick="setDeviceScale('iphone', this)">iPhone 16 Pro</button>
+        <button class="sim-ctrl-btn" onclick="setDeviceScale('pixel', this)">Android Pixel</button>
+        <button class="sim-ctrl-btn" onclick="setDeviceScale('flat', this)">Frameless</button>
+        <span class="text-slate-600">|</span>
+        <button class="sim-ctrl-btn" onclick="setZoom(1.0, this)">100%</button>
+        <button class="sim-ctrl-btn active" onclick="setZoom(0.85, this)">85%</button>
+        <button class="sim-ctrl-btn" onclick="setZoom(0.75, this)">75%</button>
+      </div>
+
+      <!-- iPhone Frame -->
+      <div class="device-shell-iphone" id="deviceShell" style="transform: scale(0.85);">
+        <div class="dynamic-island" id="dynamicIsland"></div>
+        <iframe id="mobileFrame" class="device-screen-frame" src="app.html"></iframe>
+        <div class="home-indicator" id="homeIndicator"></div>
+      </div>
+    </div>
+
+    <!-- Right: Developer Reference Panel -->
+    <aside class="dev-specs-panel">
+      <!-- Nav Tabs -->
+      <nav class="specs-nav">
+        <button class="specs-tab-btn active" onclick="switchSpecTab('architecture', this)">1. Architecture &amp; Nav</button>
+        <button class="specs-tab-btn" onclick="switchSpecTab('tokens', this)">2. Design Tokens</button>
+        <button class="specs-tab-btn" onclick="switchSpecTab('screens', this)">3. Screen Logic (APP-01–05)</button>
+        <button class="specs-tab-btn" onclick="switchSpecTab('backend', this)">4. Data &amp; SQLite Schema</button>
+      </nav>
+
+      <!-- Content Area -->
+      <div class="specs-content-area" id="specsContent">
+
+        <!-- TAB 1: ARCHITECTURE -->
+        <div id="spec-architecture" class="spec-tab-pane">
+          <div class="spec-block">
+            <h3 class="spec-h3">
+              <span>App Navigation Structure</span>
+              <span class="spec-badge">FLUTTER / REACT NATIVE / SWIFTUI</span>
+            </h3>
+            <p class="text-xs text-slate-300">
+              The mobile application follows a <strong>BottomNavigationBar</strong> with 5 primary root destinations. Modal flows and deep evidence use <strong>Drag-to-Dismiss Bottom Sheets</strong> to preserve user context.
+            </p>
+
+            <table class="spec-table mt-3">
+              <thead>
+                <tr>
+                  <th>Tab ID</th>
+                  <th>Screen Name</th>
+                  <th>Route / Nav Stack</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code class="spec-code">brief</code></td>
+                  <td>Opportunity Brief (Home)</td>
+                  <td><code>/brief</code> → Sheet: <code>EvidenceSheetModal</code></td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">analysis</code></td>
+                  <td>Company Analysis</td>
+                  <td><code>/analysis/:isin</code> → Ticker Scroll</td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">watchlist</code></td>
+                  <td>Watchlist &amp; Notes</td>
+                  <td><code>/watchlist</code> → Inline Thesis Editor</td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">explore</code></td>
+                  <td>Explore &amp; Screener</td>
+                  <td><code>/explore</code> → <code>CompareSheetModal</code></td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">settings</code></td>
+                  <td>Settings &amp; Rules</td>
+                  <td><code>/settings</code> → Rules &amp; Provider Health</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="spec-block">
+            <h3 class="spec-h3">Touch Target &amp; Mobile Ergonomics</h3>
+            <ul class="text-xs text-slate-300 space-y-2 list-disc pl-4 mt-2">
+              <li><strong>Minimum Touch Targets:</strong> All interactive buttons and tabs have an effective tap target of &ge; 44x44 points.</li>
+              <li><strong>Safe Area Insets:</strong> Top safe area (<code class="spec-code">44px</code> on notch devices) and Bottom safe area (<code class="spec-code">34px</code> for home bar indicator).</li>
+              <li><strong>Pull-to-Refresh:</strong> The Opportunity Brief and Company Analysis views support native swipe-down refresh to trigger backend completed session sync.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- TAB 2: DESIGN TOKENS -->
+        <div id="spec-tokens" class="spec-tab-pane" style="display: none;">
+          <div class="spec-block">
+            <h3 class="spec-h3">4 Mobile Design Archetypes</h3>
+            <p class="text-xs text-slate-300 mb-3">
+              The mobile UI provides 4 switchable clean themes (accessible via the Sun icon in the top header or in the Settings tab):
+            </p>
+            <div class="space-y-2 text-xs">
+              <div class="p-2 border border-slate-700 rounded bg-slate-900">
+                <strong class="text-cyan-400">1. Minimal iOS / SaaS:</strong> System SF Pro, clean slate `#F8FAFC`, rounded-14px cards, high clarity.
+              </div>
+              <div class="p-2 border border-slate-700 rounded bg-slate-900">
+                <strong class="text-amber-400">2. Swiss Editorial:</strong> Newsreader serif headlines, warm ivory `#FAF8F5`, formal paper memorandum feel.
+              </div>
+              <div class="p-2 border border-slate-700 rounded bg-slate-900">
+                <strong class="text-emerald-400">3. Dark Institutional Pro:</strong> Obsidian `#090D16`, monospace data alignment, Bloomberg/Koyfin cockpit.
+              </div>
+              <div class="p-2 border border-slate-700 rounded bg-slate-900">
+                <strong class="text-violet-400">4. Bento Grid:</strong> Segmented modular cards, zinc `#F4F4F5`, pill chips.
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-block">
+            <h3 class="spec-h3">Color Tokens (Hex &amp; Purpose)</h3>
+            <table class="spec-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Value</th>
+                  <th>Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code class="spec-code">--m-primary</code></td>
+                  <td><code>#2563EB</code></td>
+                  <td>Brand tint, active tabs, buttons</td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">--m-green</code></td>
+                  <td><code>#10B981</code></td>
+                  <td>Worth researching, passed checks</td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">--m-amber</code></td>
+                  <td><code>#F59E0B</code></td>
+                  <td>Watch &amp; wait, proxy benchmark tag</td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">--m-red</code></td>
+                  <td><code>#EF4444</code></td>
+                  <td>Price declines, fundamental concerns</td>
+                </tr>
+                <tr>
+                  <td><code class="spec-code">--m-card</code></td>
+                  <td><code>#FFFFFF</code></td>
+                  <td>Elevated surfaces</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 3: SCREEN LOGIC -->
+        <div id="spec-screens" class="spec-tab-pane" style="display: none;">
+          <div class="spec-block">
+            <h3 class="spec-h3">APP-01: Opportunity Brief Rules</h3>
+            <ul class="text-xs text-slate-300 space-y-2 list-disc pl-4 mt-2">
+              <li><strong>Decline Discovery Window:</strong> User can toggle Daily (&le; -2%) or 1-Month (&le; -8%). A stock must cross this threshold on completed sessions to appear.</li>
+              <li><strong>Proxy Benchmark Label:</strong> When using a locally constructed equal-weight basket (e.g. IT proxy of 5 stocks), the UI must explicitly display <span class="spec-badge">Proxy Basket</span>.</li>
+              <li><strong>Conclusion Precedence:</strong> Evaluated in strict order:
+                <ol class="pl-4 mt-1 space-y-1 list-decimal">
+                  <li><strong>Fundamental concerns:</strong> Quality check failed or material concern verified.</li>
+                  <li><strong>Insufficient evidence:</strong> Missing data, unverified corporate action distortion, or unreviewed sector.</li>
+                  <li><strong>Watch and wait:</strong> Quality passes, but valuation fails or caution flag active.</li>
+                  <li><strong>Worth researching:</strong> All quality checks pass, valuation &lt; sector benchmark, and context verified.</li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+
+          <div class="spec-block">
+            <h3 class="spec-h3">APP-02: Company Analysis Rules</h3>
+            <ul class="text-xs text-slate-300 space-y-2 list-disc pl-4 mt-2">
+              <li><strong>3-Year Statement Evidence:</strong> Revenue, PAT, Operating Cash Flow, Capex, and derived Free Cash Flow (<code class="spec-code">FCF = OCF − Capex</code>) with consolidated basis.</li>
+              <li><strong>Corporate Action Protection:</strong> Splits and bonus issues must not trigger apparent collapse. Unverified corporate actions mark candidate <span class="spec-badge">Insufficient Evidence</span>.</li>
+              <li><strong>Missing Value Rule:</strong> Unavailable inputs show "Unavailable" (never 0, never silent pass).</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- TAB 4: BACKEND & SQLITE SCHEMA -->
+        <div id="spec-backend" class="spec-tab-pane" style="display: none;">
+          <div class="spec-block">
+            <h3 class="spec-h3">Local SQLite Storage Entities</h3>
+            <p class="text-xs text-slate-300 mb-2">
+              All watchlist entries, user thesis notes, and research review intervals must persist locally on the device:
+            </p>
+            <pre class="spec-code text-xs p-3 block overflow-x-auto">
+CREATE TABLE watchlist (
+  isin TEXT PRIMARY KEY,
+  ticker TEXT NOT NULL,
+  added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE personal_notes (
+  isin TEXT PRIMARY KEY,
+  thesis TEXT,
+  concerns TEXT,
+  next_review_date DATE,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (isin) REFERENCES watchlist(isin)
+);
+
+CREATE TABLE sector_research_notes (
+  sector_id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  published_date DATE,
+  reviewed_date DATE,
+  next_review_date DATE,
+  classification TEXT CHECK(classification IN ('temporary', 'structural', 'mixed', 'unknown')),
+  severity TEXT CHECK(severity IN ('informational', 'caution', 'material')),
+  summary TEXT
+);
+            </pre>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    function setDeviceScale(mode, btnEl) {
+      document.querySelectorAll('.sim-ctrl-btn').forEach(b => {
+        if (['iPhone 16 Pro', 'Android Pixel', 'Frameless'].includes(b.textContent)) b.classList.remove('active');
+      });
+      btnEl.classList.add('active');
+
+      const shell = document.getElementById('deviceShell');
+      const island = document.getElementById('dynamicIsland');
+      const home = document.getElementById('homeIndicator');
+
+      if (mode === 'iphone') {
+        shell.style.width = '393px';
+        shell.style.height = '820px';
+        shell.style.borderRadius = '52px';
+        shell.style.padding = '12px';
+        shell.style.boxShadow = '0 0 0 4px #262626, 0 0 0 7px #171717, 0 30px 60px rgba(0, 0, 0, 0.8)';
+        island.style.display = 'block';
+        home.style.display = 'block';
+      } else if (mode === 'pixel') {
+        shell.style.width = '412px';
+        shell.style.height = '840px';
+        shell.style.borderRadius = '36px';
+        shell.style.padding = '8px';
+        shell.style.boxShadow = '0 0 0 3px #374151, 0 25px 50px rgba(0, 0, 0, 0.7)';
+        island.style.display = 'none';
+        home.style.display = 'block';
+      } else if (mode === 'flat') {
+        shell.style.width = '390px';
+        shell.style.height = '780px';
+        shell.style.borderRadius = '0';
+        shell.style.padding = '0';
+        shell.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+        island.style.display = 'none';
+        home.style.display = 'none';
+      }
+    }
+
+    function setZoom(scale, btnEl) {
+      document.querySelectorAll('.sim-ctrl-btn').forEach(b => {
+        if (['100%', '85%', '75%'].includes(b.textContent)) b.classList.remove('active');
+      });
+      btnEl.classList.add('active');
+      document.getElementById('deviceShell').style.transform = `scale(${scale})`;
+    }
+
+    function switchSpecTab(tabId, btnEl) {
+      document.querySelectorAll('.specs-tab-btn').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      document.querySelectorAll('.spec-tab-pane').forEach(p => p.style.display = 'none');
+      document.getElementById(`spec-${tabId}`).style.display = 'block';
+    }
+  </script>
+</body>
+</html>

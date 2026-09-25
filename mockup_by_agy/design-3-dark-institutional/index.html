@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Advisory — Institutional Pro Terminal</title>
+  <link rel="stylesheet" href="../shared/shared-styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="terminal-body">
+
+  <!-- Terminal State Control Header -->
+  <div class="terminal-sim-bar">
+    <div class="terminal-container flex-between">
+      <div class="flex-center gap-3">
+        <span class="term-cyan font-mono font-bold text-xs">[SYS_SIM]</span>
+        <select id="stateSelect" class="term-select" onchange="window.switchTermState(this.value)">
+          <option value="normal">NORMAL_EXEC (Snapshot Active)</option>
+          <option value="no-data">STATE_01: NO_DATA_SETUP</option>
+          <option value="refreshing">STATE_02: REFRESH_IN_PROGRESS</option>
+          <option value="token-rejected">STATE_03: TOKEN_AUTH_FAILURE</option>
+          <option value="partial-failure">STATE_04: PARTIAL_PROVIDER_GAP</option>
+          <option value="research-expired">STATE_05: RESEARCH_EXPIRED_30D</option>
+          <option value="no-opportunities">STATE_06: ZERO_QUALIFYING_OPPS</option>
+        </select>
+      </div>
+      <div class="term-status-right font-mono text-xs">
+        <span class="term-green font-bold">● FEED_ONLINE</span> | LATENCY: 142ms | TOKEN_EXP: 2027-08-14
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal Primary Cockpit Bar -->
+  <header class="terminal-header">
+    <div class="terminal-container flex-between">
+      <div class="flex-center gap-4">
+        <div class="terminal-logo font-mono">
+          <span class="term-cyan font-bold">&gt; ADVISORY_CORE</span>
+          <span class="term-dim">v0.3_INSTITUTIONAL</span>
+        </div>
+        <div class="term-sep">|</div>
+        <div class="font-mono text-xs text-slate-400">
+          SESSION: <span class="term-white font-bold" id="termTradingDate">2026-09-24 (T)</span> &bull; 
+          HORIZON: <span class="term-white">1–3 YR</span> &bull; 
+          UNIVERSE: <span class="term-white">5/35 (PHASE_1)</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="term-nav font-mono">
+        <button class="term-nav-btn active" data-screen="brief" onclick="window.navigateToScreen('brief')">[F1] BRIEF</button>
+        <button class="term-nav-btn" data-screen="analysis" onclick="window.navigateToScreen('analysis')">[F2] DOSSIER</button>
+        <button class="term-nav-btn" data-screen="watchlist" onclick="window.navigateToScreen('watchlist')">[F3] WATCHLIST (<span id="termWatchCount">2</span>)</button>
+        <button class="term-nav-btn" data-screen="explore" onclick="window.navigateToScreen('explore')">[F4] EXPLORE</button>
+        <button class="term-nav-btn" data-screen="settings" onclick="window.navigateToScreen('settings')">[F5] GOVERNANCE</button>
+      </nav>
+
+      <div>
+        <button class="btn-term-action" onclick="window.triggerTermRefresh()">[REFRESH_FEED]</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Market Movement Strip -->
+  <section class="term-ticker-bar font-mono">
+    <div class="terminal-container flex-between">
+      <div class="flex-center gap-6 text-xs">
+        <div>NIFTY_50: <span class="term-red font-bold" id="bmNifty">-1.35%</span> (25,120.40)</div>
+        <div>IT_PROXY: <span class="term-red font-bold" id="bmIt">-2.40%</span> <span class="term-proxy-tag">[PROXY_5]</span></div>
+        <div>FMCG: <span class="term-red font-bold" id="bmFmcg">-1.10%</span></div>
+        <div>HEALTHCARE: <span class="term-red font-bold" id="bmPharma">-0.75%</span></div>
+      </div>
+      <div class="flex-center gap-2">
+        <span class="text-xs text-slate-400">WINDOW:</span>
+        <button class="term-toggle active" id="btnDay" onclick="window.switchDeclineWindow('day')">DAY (-2%)</button>
+        <button class="term-toggle" id="btnMonth" onclick="window.switchDeclineWindow('month')">1-MO (-8%)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- System Alert Container -->
+  <div class="terminal-container">
+    <div id="termAlertBox" class="term-banner" style="display: none;"></div>
+  </div>
+
+  <!-- MAIN TERMINAL CANVAS -->
+  <main class="terminal-container term-viewport">
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: APP-01 OPPORTUNITY BRIEF         -->
+    <!-- ========================================== -->
+    <section id="screen-brief" class="term-screen active">
+
+      <!-- Worth Researching Candidates -->
+      <div class="term-section-header">
+        <div class="flex-center gap-2">
+          <span class="term-icon font-mono">▲</span>
+          <h2 class="term-h2 font-mono">PRIMARY_OPPORTUNITY_QUEUE (WORTH_RESEARCHING)</h2>
+        </div>
+        <div class="term-counter font-mono" id="worthCounter">[2_QUALIFIED]</div>
+      </div>
+
+      <div class="term-cards-grid" id="termWorthGrid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Watch & Wait Queue -->
+      <div class="term-section-header mt-8 header-amber">
+        <div class="flex-center gap-2">
+          <span class="term-icon text-amber-500 font-mono">■</span>
+          <h2 class="term-h2 font-mono text-amber-400">MONITORING_QUEUE (WATCH_AND_WAIT)</h2>
+        </div>
+        <div class="term-counter text-amber-400 font-mono" id="watchCounter">[1_MONITORING]</div>
+      </div>
+
+      <div class="term-cards-grid" id="termWatchGrid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Exclusions Terminal Box -->
+      <div class="term-box-exclusion font-mono mt-6">
+        <div class="term-dim">EXCLUSION_AUDIT_LOG:</div>
+        <div class="text-xs text-slate-300 mt-1">
+          TOTAL_EVALUATED: 5 | PASSED: 3 | VALUATION_FAIL: 1 (ASIANPAINT: P/E 46.5x &gt; BENCHMARK 41.2x) | CORP_ACTION_DISQUALIFIED: 1 (TITAN: 1:1 BONUS DISTORTION)
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: APP-02 COMPANY ANALYSIS          -->
+    <!-- ========================================== -->
+    <section id="screen-analysis" class="term-screen">
+      
+      <!-- Ticker Selector -->
+      <div class="term-ticker-select-bar font-mono">
+        <span class="term-dim">SELECT_TICKER:</span>
+        <div id="termTickerButtons" class="flex-center gap-2">
+          <!-- Dynamic ticker buttons -->
+        </div>
+      </div>
+
+      <div id="termDeepContainer" class="mt-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: APP-03 WATCHLIST & NOTES         -->
+    <!-- ========================================== -->
+    <section id="screen-watchlist" class="term-screen">
+      <div class="term-panel p-6">
+        <div class="flex-between border-b border-slate-800 pb-3">
+          <h2 class="term-h2 font-mono">PERSISTENT_WATCHLIST_&amp;_THESES_DB</h2>
+          <span class="font-mono text-xs term-green">SQLITE_ENGINE: ACTIVE (COMMIT_SURVIVES_REFRESH)</span>
+        </div>
+
+        <div id="termWatchlistList" class="space-y-4 mt-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 4: APP-04 EXPLORE & COMPARE         -->
+    <!-- ========================================== -->
+    <section id="screen-explore" class="term-screen">
+      <div class="term-panel p-6">
+        <div class="flex-between border-b border-slate-800 pb-3">
+          <h2 class="term-h2 font-mono">UNIVERSE_EXPLORE_&amp;_3_WAY_MATRIX</h2>
+          <div class="font-mono text-xs text-slate-400">SORT_RULE: UNAVAILABLE_VALUES_SORT_LAST</div>
+        </div>
+
+        <!-- Filter Row -->
+        <div class="term-filter-grid font-mono mt-4">
+          <input type="text" id="termSearch" placeholder="[QUERY_ISIN_OR_TICKER]" class="term-input" oninput="window.filterTermScreener()">
+          <select id="termSector" class="term-select" onchange="window.filterTermScreener()">
+            <option value="all">SECTOR: ALL</option>
+            <option value="it">SECTOR: IT</option>
+            <option value="fmcg">SECTOR: FMCG</option>
+            <option value="pharma">SECTOR: PHARMA</option>
+          </select>
+          <select id="termConclusion" class="term-select" onchange="window.filterTermScreener()">
+            <option value="all">STATUS: ALL</option>
+            <option value="Worth researching">STATUS: WORTH_RESEARCHING</option>
+            <option value="Watch and wait">STATUS: WATCH_&amp;_WAIT</option>
+            <option value="Fundamental concerns">STATUS: FUNDAMENTAL_CONCERNS</option>
+            <option value="Insufficient evidence">STATUS: INSUFFICIENT_EVIDENCE</option>
+          </select>
+        </div>
+
+        <!-- Terminal Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="term-table font-mono">
+            <thead>
+              <tr>
+                <th>TICKER</th>
+                <th>SECTOR</th>
+                <th class="text-right">PRICE (₹)</th>
+                <th class="text-right">DAY_RET</th>
+                <th class="text-right">1MO_RET</th>
+                <th class="text-right">P/E</th>
+                <th class="text-right">ROCE</th>
+                <th class="text-right">D/E</th>
+                <th>CONCLUSION</th>
+                <th class="text-center">CMP</th>
+              </tr>
+            </thead>
+            <tbody id="termTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3-Way Comparison Matrix -->
+        <div class="mt-8 border-t border-slate-800 pt-4">
+          <div class="flex-between">
+            <h3 class="term-h3 font-mono">3_WAY_CROSS_COMPARISON_MATRIX</h3>
+            <button class="btn-term-action text-xs" onclick="window.clearTermComparison()">[RESET_MATRIX]</button>
+          </div>
+
+          <div id="termCrossBanner" class="term-banner banner-amber mt-2" style="display: none;">
+            ⚠️ CROSS_SECTOR_WARNING: Comparison includes multiple sectors. Economic drivers and valuation multiples reflect fundamentally non-comparable balance sheet structures.
+          </div>
+
+          <div id="termMatrixWrap" class="mt-3">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: APP-05 RESEARCH NOTES & SETTINGS -->
+    <!-- ========================================== -->
+    <section id="screen-settings" class="term-screen">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Sector Notes -->
+        <div class="term-panel p-6">
+          <h3 class="term-h3 font-mono mb-3">SOURCED_SECTOR_NOTES_LOG</h3>
+          <div id="termSectorNotes" class="space-y-3 font-mono">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Rules & Provider Config -->
+        <div class="term-panel p-6">
+          <div class="flex-between mb-4">
+            <h3 class="term-h3 font-mono">HEURISTIC_RULES_CONFIG</h3>
+            <span class="term-cyan font-mono text-xs font-bold" id="termRuleVer">[v1.2]</span>
+          </div>
+
+          <div class="space-y-3 font-mono text-xs">
+            <div class="flex-between">
+              <span class="text-slate-400">ROCE_MIN_THRESHOLD:</span>
+              <input type="number" id="tRoce" value="15.0" class="term-input-sm">
+            </div>
+            <div class="flex-between">
+              <span class="text-slate-400">MAX_DEBT_TO_EQUITY:</span>
+              <input type="number" id="tDe" value="1.00" class="term-input-sm">
+            </div>
+            <div class="flex-between">
+              <span class="text-slate-400">DAILY_DISCOVERY_DROP:</span>
+              <input type="number" id="tDay" value="-2.0" class="term-input-sm">
+            </div>
+            <div class="flex-between">
+              <span class="text-slate-400">MONTHLY_DISCOVERY_DROP:</span>
+              <input type="number" id="tMonth" value="-8.0" class="term-input-sm">
+            </div>
+            <button class="btn-term-action w-full mt-4" onclick="window.saveTermRules()">[SAVE_&amp;_BUMP_VERSION_v1.3]</button>
+          </div>
+
+          <hr class="border-slate-800 my-6">
+
+          <h3 class="term-h3 font-mono mb-2">PROVIDER_DIAGNOSTICS</h3>
+          <div class="font-mono text-xs space-y-1 text-slate-400">
+            <div>GATEWAY: Upstox Analytics API (Local Bridge)</div>
+            <div>STATUS: <span class="term-green font-bold">AUTHENTICATED</span></div>
+            <div>EXPIRY: 2027-08-14 (323 days remaining)</div>
+            <div>QUOTA: 4,850 / 5,000 requests remaining today</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Evidence Modal -->
+  <div class="overlay-backdrop" id="termModalBackdrop" onclick="window.closeTermModal(event)">
+    <div class="term-modal" onclick="event.stopPropagation()">
+      <div class="flex-between border-b border-slate-700 pb-3">
+        <h3 class="term-h3 font-mono" id="termModalTitle">AUDIT_RECORD</h3>
+        <button class="term-close-btn" onclick="window.closeTermModal()">&times;</button>
+      </div>
+      <div class="mt-4 font-mono text-xs" id="termModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <div class="term-toast-box" id="termToasts"></div>
+
+  <!-- Scripts -->
+  <script src="../shared/mock-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

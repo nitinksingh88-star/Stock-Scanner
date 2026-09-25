@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Advisory — Swiss Editorial Design</title>
+  <link rel="stylesheet" href="../shared/shared-styles.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="editorial-body">
+
+  <!-- Interactive State Control Strip (For Mockup Evaluation) -->
+  <div class="state-simulation-bar" id="stateSimBar">
+    <div class="state-sim-inner">
+      <span class="sim-label">⚡ State Simulation:</span>
+      <select id="stateSelect" class="sim-select" onchange="window.switchEditorialState(this.value)">
+        <option value="normal">Normal Operation (Active Brief)</option>
+        <option value="no-data">State 1: No Data Yet (Initial Setup)</option>
+        <option value="refreshing">State 2: Refresh Running (In-Progress)</option>
+        <option value="token-rejected">State 3: Token Rejected / Expired</option>
+        <option value="partial-failure">State 4: Partial Provider Failure</option>
+        <option value="research-expired">State 5: Research Note Expired (&gt;30d)</option>
+        <option value="no-opportunities">State 6: No Qualifying Opportunities</option>
+      </select>
+      <span class="sim-hint">Simulate real backend and provider edge states directly</span>
+    </div>
+  </div>
+
+  <!-- Editorial Masthead Header -->
+  <header class="masthead">
+    <div class="container-shell">
+      <div class="masthead-topline">
+        <div class="masthead-col-left">
+          <span class="meta-tag">PRIVATE INVESTMENT RESEARCH</span>
+          <span class="meta-tag">UNIVERSE: 30–50 NONFINANCIAL STOCKS</span>
+        </div>
+        <div class="masthead-col-center">
+          <span class="masthead-logo-eyebrow">EQUITY INTELLIGENCE MEMORANDUM</span>
+          <h1 class="masthead-title">The Opportunity Brief</h1>
+        </div>
+        <div class="masthead-col-right">
+          <span class="meta-tag" id="mastheadTradingDate">TRADING SESSION: 24-SEP-2026 (T)</span>
+          <span class="meta-tag text-emerald" id="mastheadProviderStatus">● UPSTOX LIVE VERIFIED</span>
+        </div>
+      </div>
+
+      <!-- Advisory Context Bar (APP-01 Requirements) -->
+      <div class="editorial-context-strip">
+        <div class="context-item">
+          <span class="ctx-label">HORIZON</span>
+          <span class="ctx-val font-serif">1–3 Years</span>
+        </div>
+        <div class="context-divider"></div>
+        <div class="context-item">
+          <span class="ctx-label">COVERED UNIVERSE</span>
+          <span class="ctx-val">5 of 35 companies (Phase 1 Slice)</span>
+        </div>
+        <div class="context-divider"></div>
+        <div class="context-item">
+          <span class="ctx-label">LAST REFRESH</span>
+          <span class="ctx-val num-tabular">25-Sep-2026 09:30 IST</span>
+        </div>
+        <div class="context-divider"></div>
+        <div class="context-item">
+          <span class="ctx-label">DECISION RULES</span>
+          <span class="ctx-val">v1.2 (Active)</span>
+        </div>
+        <div class="context-action">
+          <button class="btn-editorial-sm" onclick="window.triggerRefreshSim()">↻ Refresh Snapshot</button>
+        </div>
+      </div>
+
+      <!-- Navigation Bar -->
+      <nav class="editorial-nav">
+        <button class="nav-tab active" data-screen="brief" onclick="window.navigateToScreen('brief')">APP-01: Opportunity Brief</button>
+        <button class="nav-tab" data-screen="analysis" onclick="window.navigateToScreen('analysis')">APP-02: Company Analysis</button>
+        <button class="nav-tab" data-screen="watchlist" onclick="window.navigateToScreen('watchlist')">APP-03: Watchlist &amp; Notes <span class="nav-pill" id="watchlistCount">2</span></button>
+        <button class="nav-tab" data-screen="explore" onclick="window.navigateToScreen('explore')">APP-04: Explore &amp; Compare</button>
+        <button class="nav-tab" data-screen="settings" onclick="window.navigateToScreen('settings')">APP-05: Notes &amp; Rules</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Banner Alerts for Edge States -->
+  <div class="container-shell">
+    <div id="systemAlertBox" class="system-alert-box" style="display: none;"></div>
+  </div>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="container-shell content-canvas">
+
+    <!-- ========================================== -->
+    <!-- SCREEN 1: APP-01 OPPORTUNITY BRIEF         -->
+    <!-- ========================================== -->
+    <section id="screen-brief" class="screen-section active">
+      
+      <!-- Market & Sector Decline Strip -->
+      <div class="paper-block market-context-card">
+        <div class="card-header-line">
+          <div>
+            <span class="kicker">DISCOVERY CONTEXT</span>
+            <h2 class="section-heading-editorial">Market &amp; Sector Movements</h2>
+            <p class="section-subtext">Identifies broad market stress and sector decline triggers across verified completed sessions.</p>
+          </div>
+          <!-- Window Toggle: Daily vs 1-Month -->
+          <div class="window-toggle-box">
+            <span class="toggle-label">DECLINE WINDOW:</span>
+            <div class="btn-group-toggle">
+              <button class="btn-toggle active" id="btnWindowDay" onclick="window.switchDeclineWindow('day')">Daily (&le; -2%)</button>
+              <button class="btn-toggle" id="btnWindowMonth" onclick="window.switchDeclineWindow('month')">1-Month (&le; -8%)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="benchmark-grid">
+          <div class="benchmark-col">
+            <span class="bm-type">BROAD MARKET</span>
+            <div class="bm-name">NIFTY 50</div>
+            <div class="bm-change num-tabular negative" id="bmNiftyChange">-1.35%</div>
+            <div class="bm-note">Latest Close: 25,120.40 (24-Sep-2026)</div>
+          </div>
+          <div class="benchmark-col">
+            <span class="bm-type">SECTOR PROXY BASKET</span>
+            <div class="bm-name">Nifty IT Proxy <span class="proxy-tag">Proxy Basket</span></div>
+            <div class="bm-change num-tabular negative" id="bmItChange">-2.40%</div>
+            <div class="bm-note">Equal-weight proxy of 5 covered liquid IT stocks</div>
+          </div>
+          <div class="benchmark-col">
+            <span class="bm-type">SECTOR BENCHMARK</span>
+            <div class="bm-name">Nifty FMCG</div>
+            <div class="bm-change num-tabular negative" id="bmFmcgChange">-1.10%</div>
+            <div class="bm-note">Official Exchange Sector Index</div>
+          </div>
+          <div class="benchmark-col">
+            <span class="bm-type">SECTOR BENCHMARK</span>
+            <div class="bm-name">Nifty Healthcare</div>
+            <div class="bm-change num-tabular negative" id="bmPharmaChange">-0.75%</div>
+            <div class="bm-note">Official Exchange Sector Index</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Primary Candidates: WORTH RESEARCHING -->
+      <div class="editorial-section-lead">
+        <div class="lead-header">
+          <div>
+            <span class="kicker">PRIMARY SELECTION (MAX 5 CANDIDATES)</span>
+            <h2 class="editorial-h2">Companies Deserving Attention</h2>
+            <p class="editorial-deck">Met all quality checks, valuation below sector benchmark, and verified research context with no unresolved material damage.</p>
+          </div>
+          <div class="status-summary-chip">
+            <span class="chip-count" id="worthResearchingCount">2</span> qualified in universe
+          </div>
+        </div>
+
+        <div class="candidate-cards-container" id="worthResearchingList">
+          <!-- Rendered dynamically from mock data -->
+        </div>
+      </div>
+
+      <!-- Secondary Candidates: WATCH AND WAIT (Strictly Separated) -->
+      <div class="editorial-section-lead mt-8">
+        <div class="lead-header border-amber">
+          <div>
+            <span class="kicker text-amber">MONITORING QUEUE (NOT PADDED INTO MAIN LIST)</span>
+            <h2 class="editorial-h2">Watch and Wait</h2>
+            <p class="editorial-deck">Sound underlying business fundamentals, but valuation remains near benchmark, senior leadership changes require verification, or sector pressure is pending resolution.</p>
+          </div>
+          <div class="status-summary-chip chip-amber">
+            <span class="chip-count" id="watchWaitCount">1</span> candidate monitoring
+          </div>
+        </div>
+
+        <div class="candidate-cards-container" id="watchWaitList">
+          <!-- Rendered dynamically from mock data -->
+        </div>
+      </div>
+
+      <!-- Exclusions & Universe Summary Strip -->
+      <div class="exclusions-notice-paper">
+        <div class="excl-text">
+          <strong class="font-serif">Universe Exclusions Summary:</strong>
+          <span>Of 5 evaluated companies, <strong id="exclValuationCount">1 failed valuation</strong> (Asian Paints P/E 46.5x vs benchmark 41.2x), and <strong id="exclCorpActionCount">1 disqualified due to unverified corporate action</strong> (Titan bonus issue distortion).</span>
+        </div>
+        <button class="btn-editorial-outline" onclick="window.navigateToScreen('explore')">Inspect Excluded in Explore &rarr;</button>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 2: APP-02 COMPANY ANALYSIS          -->
+    <!-- ========================================== -->
+    <section id="screen-analysis" class="screen-section">
+      
+      <!-- Company Selector Bar -->
+      <div class="paper-block company-nav-bar">
+        <div class="comp-nav-label">Select Company for Deep Analysis:</div>
+        <div class="comp-nav-pills" id="companyAnalysisPills">
+          <!-- Dynamic buttons for TCS, INFY, ASIANPAINT, DIVISLAB, TITAN -->
+        </div>
+      </div>
+
+      <div id="companyDeepViewContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 3: APP-03 WATCHLIST & NOTES         -->
+    <!-- ========================================== -->
+    <section id="screen-watchlist" class="screen-section">
+      <div class="paper-block">
+        <div class="card-header-line">
+          <div>
+            <span class="kicker">PERSISTENT RESEARCH LOG</span>
+            <h2 class="section-heading-editorial">Watchlist &amp; Investment Theses</h2>
+            <p class="section-subtext">Locally persisted watch items and personal review checkpoints. Independent of market data refreshes.</p>
+          </div>
+          <div class="badge badge-worth-researching">
+            <span class="badge-dot"></span> Persisted in Local SQLite DB
+          </div>
+        </div>
+
+        <div id="watchlistItemsList" class="watchlist-items-list mt-6">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 4: APP-04 EXPLORE & COMPARE         -->
+    <!-- ========================================== -->
+    <section id="screen-explore" class="screen-section">
+      <div class="paper-block">
+        <div class="card-header-line">
+          <div>
+            <span class="kicker">SECONDARY SEARCH &amp; COMPARISON</span>
+            <h2 class="section-heading-editorial">Universe Screener &amp; Multi-Company Matrix</h2>
+            <p class="section-subtext">Filter covered universe. Unavailable values sort last. Compare up to 3 companies side-by-side.</p>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="screener-filter-bar">
+          <div class="filter-item">
+            <label>Search:</label>
+            <input type="text" id="screenerSearchInput" placeholder="Filter by ticker or name..." oninput="window.filterScreener()">
+          </div>
+          <div class="filter-item">
+            <label>Sector:</label>
+            <select id="screenerSectorSelect" onchange="window.filterScreener()">
+              <option value="all">All Sectors</option>
+              <option value="it">Information Technology</option>
+              <option value="fmcg">FMCG &amp; Paints</option>
+              <option value="pharma">Pharmaceuticals</option>
+              <option value="consumer_discretionary">Consumer Discretionary</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>Conclusion:</label>
+            <select id="screenerConclusionSelect" onchange="window.filterScreener()">
+              <option value="all">All Statuses</option>
+              <option value="Worth researching">Worth researching</option>
+              <option value="Watch and wait">Watch and wait</option>
+              <option value="Fundamental concerns">Fundamental concerns</option>
+              <option value="Insufficient evidence">Insufficient evidence</option>
+            </select>
+          </div>
+          <div class="filter-item">
+            <label>Sort By:</label>
+            <select id="screenerSortSelect" onchange="window.filterScreener()">
+              <option value="decline_day">Daily Decline (Largest first)</option>
+              <option value="decline_month">1-Month Decline (Largest first)</option>
+              <option value="pe_ratio">P/E Multiple (Lowest first)</option>
+              <option value="roce">ROCE (Highest first)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Screener Table -->
+        <div class="table-responsive-wrapper mt-4">
+          <table class="editorial-table" id="screenerTable">
+            <thead>
+              <tr>
+                <th>Ticker / Name</th>
+                <th>Sector</th>
+                <th class="text-right">Price (₹)</th>
+                <th class="text-right">Day %</th>
+                <th class="text-right">Month %</th>
+                <th class="text-right">P/E</th>
+                <th class="text-right">ROCE</th>
+                <th class="text-right">D/E</th>
+                <th>Conclusion</th>
+                <th>Compare</th>
+              </tr>
+            </thead>
+            <tbody id="screenerTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3-Company Comparison Module -->
+        <div class="comparison-module mt-10">
+          <div class="card-header-line">
+            <div>
+              <span class="kicker">SIDE-BY-SIDE EVALUATION</span>
+              <h3 class="editorial-h3">3-Company Comparison Matrix</h3>
+              <p class="section-subtext">Cross-sector comparisons and statement basis incompatibilities are explicitly highlighted.</p>
+            </div>
+            <button class="btn-editorial-sm" onclick="window.resetComparison()">Clear Comparison</button>
+          </div>
+
+          <div id="comparisonAlertBanner" class="comparison-warning-banner" style="display: none;">
+            ⚠️ <strong>Cross-Sector Comparison Notice:</strong> Comparing across distinct sectors (e.g., IT vs FMCG). Valuation multiples (P/E) and capital intensity structures reflect differing economic business models.
+          </div>
+
+          <div id="comparisonMatrixContainer" class="comparison-matrix-wrapper mt-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SCREEN 5: APP-05 RESEARCH NOTES & SETTINGS -->
+    <!-- ========================================== -->
+    <section id="screen-settings" class="screen-section">
+      <div class="two-col-settings">
+        
+        <!-- Left Column: Sourced Research Notes -->
+        <div class="paper-block">
+          <div class="card-header-line">
+            <div>
+              <span class="kicker">QUALITATIVE EVIDENCE</span>
+              <h2 class="editorial-h3">Sector Research Notes</h2>
+              <p class="section-subtext">Every note requires a valid source link, review interval, and separate classification vs severity.</p>
+            </div>
+          </div>
+
+          <div id="sectorNotesListContainer" class="sector-notes-list mt-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Right Column: Screening Rule Thresholds & API Status -->
+        <div class="paper-block">
+          <div class="card-header-line">
+            <div>
+              <span class="kicker">SYSTEM GOVERNANCE</span>
+              <h2 class="editorial-h3">Thresholds &amp; Provider Health</h2>
+              <p class="section-subtext">Modifying rule thresholds increments rule version and triggers deterministic recalculation.</p>
+            </div>
+            <span class="badge badge-insufficient-evidence" id="activeRuleVersionTag">v1.2</span>
+          </div>
+
+          <!-- Rule Configuration Form -->
+          <div class="settings-form mt-4">
+            <h4 class="settings-group-title">Active Thresholds</h4>
+            <div class="form-row">
+              <label>ROCE Minimum Threshold:</label>
+              <div class="input-with-unit">
+                <input type="number" id="settingRoce" value="15.0" step="0.5">
+                <span>%</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>Debt / Equity Maximum:</label>
+              <div class="input-with-unit">
+                <input type="number" id="settingDebtEquity" value="1.00" step="0.05">
+                <span>x</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>Daily Discovery Decline Trigger:</label>
+              <div class="input-with-unit">
+                <input type="number" id="settingDailyDecline" value="-2.0" step="0.1">
+                <span>%</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>1-Month Discovery Decline Trigger:</label>
+              <div class="input-with-unit">
+                <input type="number" id="settingMonthlyDecline" value="-8.0" step="0.5">
+                <span>%</span>
+              </div>
+            </div>
+            <button class="btn-editorial-primary mt-2" onclick="window.saveRuleSettings()">Save &amp; Recalculate Assessment (v1.3)</button>
+          </div>
+
+          <hr class="editorial-divider my-6">
+
+          <!-- Provider Connection Details -->
+          <div class="provider-status-card">
+            <h4 class="settings-group-title">Upstox Analytics Provider Status</h4>
+            <div class="provider-meta-row">
+              <span>Token Status:</span>
+              <strong class="text-emerald">● Active &amp; Valid</strong>
+            </div>
+            <div class="provider-meta-row">
+              <span>Token Expiry:</span>
+              <strong class="num-tabular">14-Aug-2027 (1-year validity)</strong>
+            </div>
+            <div class="provider-meta-row">
+              <span>Rate Limit Remaining:</span>
+              <strong class="num-tabular">4,850 of 5,000 req/day</strong>
+            </div>
+            <div class="provider-meta-row">
+              <span>Network Latency:</span>
+              <strong class="num-tabular">142 ms (Loopback local bridge)</strong>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Evidence Drawer Modal (View Evidence) -->
+  <div class="overlay-backdrop" id="evidenceDrawerBackdrop" onclick="window.closeEvidenceDrawer(event)">
+    <div class="editorial-drawer" id="evidenceDrawerContent" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div>
+          <span class="kicker">AUDITABLE RECORD</span>
+          <h3 class="editorial-h3" id="drawerTitle">Evidence &amp; Formula Trace</h3>
+        </div>
+        <button class="btn-close" onclick="window.closeEvidenceDrawer()">&times;</button>
+      </div>
+      <div class="drawer-body" id="drawerBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification for saves -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="../shared/mock-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
