@@ -1,0 +1,33 @@
+# Git ignore for Stock Advisory project
+
+# Node / Web artifacts
+node_modules/
+dist/
+.cache/
+npm-debug.log*
+
+# Flutter / Dart
+app_source_code/.dart_tool/
+app_source_code/.flutter-plugins
+app_source_code/.flutter-plugins-dependencies
+app_source_code/.packages
+app_source_code/build/
+app_source_code/.pub-cache/
+app_source_code/.pub/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+.idea/
+.vscode/
+*.iml
+
+# Local database & environment secrets
+*.db
+*.db-journal
+*.sqlite
+.env
+.env.local
+server.config
