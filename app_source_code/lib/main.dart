@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'features/analysis/company_analysis_screen.dart';
 import 'features/brief/opportunity_brief_screen.dart';
+import 'features/screener/explore_screener_screen.dart';
+import 'features/settings/settings_rules_screen.dart';
+import 'features/watchlist/watchlist_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +41,14 @@ class MainNavigationShell extends StatefulWidget {
 
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _currentTabIndex = 0;
-  String? _selectedIsin;
+  String _selectedIsin = 'INE467B01029'; // Default to TCS
+
+  void _navigateToAnalysis(String isin) {
+    setState(() {
+      _selectedIsin = isin;
+      _currentTabIndex = 1; // Switch to Analysis tab
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,18 +56,29 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       body: IndexedStack(
         index: _currentTabIndex,
         children: [
+          // Tab 0: APP-01 Opportunity Brief
           OpportunityBriefScreen(
-            onSelectCompany: (isin) {
-              setState(() {
-                _selectedIsin = isin;
-                _currentTabIndex = 1; // Switch to Analysis tab
-              });
-            },
+            onSelectCompany: _navigateToAnalysis,
           ),
-          _PlaceholderScreen(title: 'Company Analysis (APP-02)', isin: _selectedIsin),
-          const _PlaceholderScreen(title: 'Watchlist & Notes (APP-03)'),
-          const _PlaceholderScreen(title: 'Universe Explore (APP-04)'),
-          const _PlaceholderScreen(title: 'Settings & Rules (APP-05)'),
+
+          // Tab 1: APP-02 Company Analysis Dossier
+          CompanyAnalysisScreen(
+            initialIsin: _selectedIsin,
+            onBack: () => setState(() => _currentTabIndex = 0),
+          ),
+
+          // Tab 2: APP-03 Watchlist & Personal Notes
+          WatchlistScreen(
+            onSelectCompany: _navigateToAnalysis,
+          ),
+
+          // Tab 3: APP-04 Universe Screener & 3-Company Compare
+          ExploreScreenerScreen(
+            onSelectCompany: _navigateToAnalysis,
+          ),
+
+          // Tab 4: APP-05 Settings, System Diagnostics & Rules Engine
+          const SettingsRulesScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -89,43 +111,6 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
             label: 'Settings',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  final String? isin;
-
-  const _PlaceholderScreen({required this.title, this.isin});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.mobile_friendly, size: 64, color: Colors.blueAccent),
-              const SizedBox(height: 16),
-              Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              if (isin != null) ...[
-                const SizedBox(height: 8),
-                Text('Active Company ISIN: $isin', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-              ],
-              const SizedBox(height: 12),
-              const Text(
-                'Refer to AGENTS.md and ../mockup_by_agy/mobile/DEVELOPER_GUIDE.md to implement full widget tree.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
