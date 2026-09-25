@@ -32,24 +32,43 @@ This directory is pre-configured with agent directives, rules, and skills so tha
 app_source_code/
 ├── AGENTS.md                        # Master Agent instructions for all Agentic AIs
 ├── FLUTTER_AGENT.md                 # Universal drop-in launch prompt
+├── GIT_WORKFLOW_AND_ROLLBACK_GUIDE.md # Git checkpoints, PRs & rollback runbooks
 ├── README.md                        # This file
 ├── pubspec.yaml                     # Dependencies (Riverpod, Dio, Sqflite, Google Fonts)
 ├── .agents/
 │   ├── rules/flutter_rules.md       # Antigravity/Agentic rule set
 │   └── skills/flutter-mobile-builder/SKILL.md
 ├── .cursor/rules/flutter.mdc        # Cursor IDE configuration
+├── test/
+│   └── mock_api_service_test.dart   # Unit tests verifying financial precedence & endpoints
 └── lib/
-    ├── main.dart                    # App entry point & bottom navigation shell
+    ├── main.dart                    # App entry point & 5-tab navigation shell
     ├── core/
     │   ├── constants/app_constants.dart
+    │   ├── network/api_endpoints.dart # 16 REST API route definitions
     │   └── theme/app_theme.dart     # Minimal, Editorial, Dark Terminal & Bento themes
     ├── models/
-    │   └── company.dart             # Domain models (Company, Checks, Statements)
+    │   ├── api_response.dart        # Standard Success/Error envelopes & metadata
+    │   ├── benchmark.dart           # NIFTY 50 & sector proxy baskets
+    │   ├── company.dart             # Domain models (Company, Checks, Statements)
+    │   ├── compare_result.dart      # 3-way side-by-side comparison data
+    │   ├── opportunity_brief.dart   # APP-01 DTO & discovery window
+    │   ├── research_note.dart       # Sourced sector research notes
+    │   ├── rule_settings.dart       # Screening heuristic thresholds & versions
+    │   └── system_status.dart       # Diagnostics, Upstox provider token & storage
     ├── mock/
-    │   └── mock_data.dart           # Offline verification data for Indian equities
+    │   └── mock_data.dart           # Offline verification data for 5 Indian equities
+    ├── services/
+    │   ├── api_service.dart         # Abstract contract for all 16 endpoints
+    │   ├── mock_api_service.dart    # Full in-memory mock service with latency & state
+    │   ├── http_api_service.dart    # Production Dio HTTP client ready for Fastify backend
+    │   └── api_provider.dart        # Riverpod providers & runtime mock toggle
     └── features/
-        └── brief/
-            └── opportunity_brief_screen.dart # APP-01 Opportunity Brief implementation
+        ├── brief/opportunity_brief_screen.dart       # APP-01 Opportunity Brief
+        ├── analysis/company_analysis_screen.dart     # APP-02 Deep Dive Dossier & 3-Yr Financials
+        ├── watchlist/watchlist_screen.dart           # APP-03 Watchlist & Personal Notes
+        ├── screener/explore_screener_screen.dart     # APP-04 Screener & 3-Way Compare
+        └── settings/settings_rules_screen.dart       # APP-05 Diagnostics, Rules v1.2 & Sector Notes
 ```
 
 ---
@@ -74,6 +93,9 @@ flutter pub get
 
 # 2. Run the application (iOS simulator, Android emulator, or Chrome)
 flutter run
+
+# 3. Run financial heuristics tests
+flutter test
 ```
 
 ---
@@ -87,4 +109,17 @@ To ensure zero-loss development and clean rollbacks for any specific feature:
 - 🏷️ **Milestone Checkpoint Tags**: Tag after every major milestone (`checkpoint-phase1-data-verified`, `checkpoint-phase3-brief-analysis`).
 - 🔍 **Pull Request (PR) Reviews**: Prepare formal PRs using the template in the guide before merging.
 - ⏪ **Rollback Runbooks**: Instant recovery via `git revert <commit-sha>`, `git revert -m 1 <merge-sha>`, tag restore, or `FeatureFlags` toggles without losing track of other work.
+
+---
+
+## 7. API Service Architecture & Mock Placeholders
+
+All 16 REST endpoints from `BACKEND_ARCHITECTURE_AND_API_SPEC.md` are modeled in `lib/services/api_service.dart`.
+
+### How Mock Switching Works
+1. **Mock Service (`MockApiService`)**: Active by default. Simulates network delay (150–300ms), returns verified standard success/error envelopes with metadata, and maintains in-memory mutations for watchlists, personal notes, sector notes, and version bumps.
+2. **HTTP Service (`HttpApiService`)**: Complete Dio implementation pointing to `AppConstants.defaultBaseUrl`.
+3. **Runtime Toggle**:
+   - In code: `final useMockApiProvider = StateProvider<bool>((ref) => true);`
+   - In UI: Navigate to the **Settings** tab (APP-05) and toggle the **"Using Mock In-Memory API"** switch. Switching to live backend requires zero code changes!
 
