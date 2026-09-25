@@ -173,5 +173,99 @@ class Company {
 
   bool get isWorthResearching => conclusion == 'Worth researching';
   bool get isWatchAndWait => conclusion == 'Watch and wait';
-  bool get hasCorporateActionDistortion => corporateActionStatus.contains('Distortion') || corporateActionStatus.contains('unverified');
+  bool get isFundamentalConcerns => conclusion == 'Fundamental concerns';
+  bool get isInsufficientEvidence => conclusion == 'Insufficient evidence';
+  bool get hasCorporateActionDistortion =>
+      corporateActionStatus.toLowerCase().contains('distortion') ||
+      corporateActionStatus.toLowerCase().contains('unverified');
+
+  Company copyWith({
+    String? isin,
+    String? ticker,
+    String? name,
+    String? sectorId,
+    String? sectorName,
+    String? exchange,
+    double? currentPrice,
+    String? priceDate,
+    double? dailyChangePercent,
+    double? monthlyChangePercent,
+    double? sectorDailyChange,
+    double? sectorMonthlyChange,
+    String? corporateActionStatus,
+    String? conclusion,
+    String? triggerSummary,
+    List<FinancialStatement>? financials,
+    List<QualityCheck>? checks,
+    SectorContext? sectorContext,
+    List<String>? companyRisks,
+    List<NextCheckTask>? nextChecks,
+    bool? isSavedInWatchlist,
+    String? personalThesis,
+    String? personalConcerns,
+  }) {
+    return Company(
+      isin: isin ?? this.isin,
+      ticker: ticker ?? this.ticker,
+      name: name ?? this.name,
+      sectorId: sectorId ?? this.sectorId,
+      sectorName: sectorName ?? this.sectorName,
+      exchange: exchange ?? this.exchange,
+      currentPrice: currentPrice ?? this.currentPrice,
+      priceDate: priceDate ?? this.priceDate,
+      dailyChangePercent: dailyChangePercent ?? this.dailyChangePercent,
+      monthlyChangePercent: monthlyChangePercent ?? this.monthlyChangePercent,
+      sectorDailyChange: sectorDailyChange ?? this.sectorDailyChange,
+      sectorMonthlyChange: sectorMonthlyChange ?? this.sectorMonthlyChange,
+      corporateActionStatus: corporateActionStatus ?? this.corporateActionStatus,
+      conclusion: conclusion ?? this.conclusion,
+      triggerSummary: triggerSummary ?? this.triggerSummary,
+      financials: financials ?? this.financials,
+      checks: checks ?? this.checks,
+      sectorContext: sectorContext ?? this.sectorContext,
+      companyRisks: companyRisks ?? this.companyRisks,
+      nextChecks: nextChecks ?? this.nextChecks,
+      isSavedInWatchlist: isSavedInWatchlist ?? this.isSavedInWatchlist,
+      personalThesis: personalThesis ?? this.personalThesis,
+      personalConcerns: personalConcerns ?? this.personalConcerns,
+    );
+  }
+
+  factory Company.fromJson(Map<String, dynamic> json) {
+    return Company(
+      isin: json['isin'] as String? ?? '',
+      ticker: json['ticker'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      sectorId: json['sectorId'] as String? ?? '',
+      sectorName: json['sectorName'] as String? ?? '',
+      exchange: json['exchange'] as String? ?? 'NSE',
+      currentPrice: (json['currentPrice'] as num?)?.toDouble() ?? 0.0,
+      priceDate: json['priceDate'] as String? ?? '2026-09-24',
+      dailyChangePercent: (json['dailyChangePercent'] as num?)?.toDouble() ?? (json['windowChangePercent'] as num?)?.toDouble() ?? 0.0,
+      monthlyChangePercent: (json['monthlyChangePercent'] as num?)?.toDouble() ?? 0.0,
+      sectorDailyChange: (json['sectorDailyChange'] as num?)?.toDouble() ?? (json['sectorChangePercent'] as num?)?.toDouble() ?? 0.0,
+      sectorMonthlyChange: (json['sectorMonthlyChange'] as num?)?.toDouble() ?? 0.0,
+      corporateActionStatus: json['corporateActionStatus'] as String? ?? 'Verified clean',
+      conclusion: json['conclusion'] as String? ?? 'Watch and wait',
+      triggerSummary: json['triggerSummary'] as String? ?? json['triggerStatement'] as String? ?? '',
+      financials: (json['financials'] as List<dynamic>?)
+              ?.map((e) => FinancialStatement.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      checks: (json['checks'] as List<dynamic>?)
+              ?.map((e) => QualityCheck.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      sectorContext: SectorContext.fromJson(json['sectorContext'] as Map<String, dynamic>? ?? {}),
+      companyRisks: (json['companyRisks'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      nextChecks: (json['nextChecks'] as List<dynamic>?)
+              ?.map((e) => NextCheckTask.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      isSavedInWatchlist: json['inWatchlist'] as bool? ?? json['isSavedInWatchlist'] as bool? ?? false,
+      personalThesis: json['personalThesis'] as String? ?? '',
+      personalConcerns: json['personalConcerns'] as String? ?? '',
+    );
+  }
 }
+
